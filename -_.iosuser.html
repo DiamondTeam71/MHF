@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel - grouped view</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="assets/css/styles2.css">
+</head>
+<body>
+ <header>
+ <img src="assets/images/logo.png" alt="Logo" class="header-logo">
+ MHF<span style="margin-left: 0;" class="span-all"> Admin</span> <button id="logoutBtn" style="
+    margin-left:auto;
+    padding:8px 15px;
+    border:none;
+    border-radius:37px;
+    background:black;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+  ">Logout</button>
+</header>
+
+<input type="text" id="searchInput" placeholder="🔍 Username লিখে সার্চ করুন..." style="
+  padding: 10px 15px;
+  width: 280px;
+  border: 2px solid #000;
+  border-radius: 37px;
+  margin: 15px auto;
+  display: block;
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  color: #000;
+  outline: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  transition: 0.3s ease;
+">
+
+<div id="authOverlay" style="
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.8);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:99999;
+  flex-direction:column;
+  color:#fff;
+  font-family:'Hind Siliguri', sans-serif;
+">
+  <h2>Admin Login Required</h2>
+  <input id="secretCode" type="text" placeholder="Secret Code" style="padding:10px;margin:5px;border-radius:10px;border:none;font-size:16px;">
+  <input id="purkaId" type="text" placeholder="Purka ID" style="padding:10px;margin:5px;border-radius:10px;border:none;font-size:16px;">
+  <button id="authLoginBtn" style="padding:10px 20px;margin-top:10px;border-radius:12px;border:none;background:#10b981;color:#fff;font-weight:bold;cursor:pointer;">Login</button>
+  <p id="authError" style="color:red;margin-top:10px;font-weight:bold;"></p>
+</div>
+
+<div class="wrap" style="margin-top:25px;">
+  <table>
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Gender</th>
+        <th>DOB</th>
+        <th>Balance (TK)</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="usersTable"></tbody>
+  </table>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ===================== Firebase Config =====================
+const firebaseConfig = {
+  apiKey: "AIzaSyB77ruQ-FxUvMAYHsUOipYB4lAQKaavCN0",
+  authDomain: "ludooclubofficial.firebaseapp.com",
+  databaseURL: "https://ludooclubofficial-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ludooclubofficial",
+  storageBucket: "ludooclubofficial.firebasestorage.app",
+  messagingSenderId: "141984102700",
+  appId: "1:141984102700:web:37f719e81ae32df69ed489",
+  measurementId: "G-PHTVR2KP9E"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+// ===================== Admin Login =====================
+const AUTH_SECRET = "MHF_SYSTEM@$@$";   
+const AUTH_PURKA = "MHF_SYSTEM@$@$";   
+
+const overlay = document.getElementById('authOverlay');
+const loginBtn = document.getElementById('authLoginBtn');
+const secretInput = document.getElementById('secretCode');
+const purkaInput = document.getElementById('purkaId');
+const authError = document.getElementById('authError');
+const logoutBtn = document.getElementById('logoutBtn');
+
+function checkAuth() {
+  const loggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+  if(loggedIn){
+    overlay.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+    loadUsersTable();
+  } else {
+    overlay.style.display = 'flex';
+    logoutBtn.style.display = 'none';
+  }
+}
+
+loginBtn.onclick = () => {
+  const code = secretInput.value.trim();
+  const purka = purkaInput.value.trim();
+  if(code === AUTH_SECRET && purka === AUTH_PURKA){
+    localStorage.setItem('isAdminLoggedIn','true');
+    checkAuth();
+  } else {
+    authError.textContent = 'Secret Code বা Purka ID ভুল!';
+  }
+}
+
+logoutBtn.onclick = () => {
+  localStorage.removeItem('isAdminLoggedIn');
+  checkAuth();
+}
+
+document.addEventListener('DOMContentLoaded', checkAuth);
+
+// ===================== Users Table =====================
+const usersTable = document.getElementById('usersTable');
+
+function loadUsersTable(){
+  const usersRef = firebase.database().ref('users');
+
+  usersRef.on('value', snapshot => {
+    const data = snapshot.val();
+    renderUsersTable(data);
+  });
+}
+
+function renderUsersTable(data){
+  usersTable.innerHTML = '';
+  if(!data){
+    usersTable.innerHTML = '<tr><td colspan="8">কোনো ইউজার নেই</td></tr>';
+    return;
+  }
+
+const searchInput = document.getElementById('searchInput');
+
+searchInput.addEventListener('keyup', () => {
+  const query = searchInput.value.trim().toLowerCase();
+  const usersRef = firebase.database().ref('users');
+  usersRef.once('value').then(snapshot => {
+    const data = snapshot.val();
+    if(!data) return renderUsersTable({});
+    const filteredData = {};
+
+    Object.entries(data).forEach(([uid, user]) => {
+      const username = user.username || '';
+      if(username.toLowerCase().includes(query)){
+        filteredData[uid] = user;
+      }
+    });
+
+    renderUsersTable(filteredData);
+  });
+});
+  Object.entries(data).forEach(([uid, user]) => {
+    const tr = document.createElement('tr');
+
+    const username = user.username || 'Unknown';
+    const email = user.email || '-';
+    const phone = user.phone || '-';
+    const gender = user.gender || '-';
+    const dob = user.dob || '-';
+    const balance = user.MainBalance ?? 0;
+    const isBanned = user.banned ?? false;
+
+    tr.innerHTML = `
+      <td>${uid}</td>
+      <td>${username} ${isBanned ? '<span style="color:red;font-weight:bold;">(BANNED)</span>' : ''}</td>
+      <td>${email}</td>
+      <td>${phone}</td>
+      <td>${gender}</td>
+      <td>${dob}</td>
+      <td style="font-weight:bold;color:green;">${balance}</td>
+      <td>
+        <button class="btn" style="background:red;color:white;" onclick="toggleBanUser('${uid}',true)">Ban</button>
+        <button class="btn" style="background:green;color:white;" onclick="toggleBanUser('${uid}',false)">Unban</button>
+        <button class="btn" style="background:#2563eb;color:white;" onclick="viewUserDetails('${uid}')">View</button>
+      </td>
+    `;
+    usersTable.appendChild(tr);
+  });
+}
+
+// ===================== Ban / Unban =====================
+async function toggleBanUser(uid, ban){
+  const action = ban ? 'BAN' : 'UNBAN';
+  if(!confirm(`আপনি কি এই ইউজারকে ${action} করতে চান?`)) return;
+  try {
+    await firebase.database().ref('users/' + uid + '/banned').set(ban);
+    alert(`✅ ইউজার ${action} করা হয়েছে!`);
+  } catch(err){
+    alert('Error: '+err.message);
+  }
+}
+
+// ===================== View User Details =====================
+function viewUserDetails(uid){
+  firebase.database().ref('users/' + uid).once('value').then(snapshot=>{
+    if(!snapshot.exists()) return alert('ডেটা পাওয়া যায়নি!');
+    const info = snapshot.val();
+    alert(`
+Username: ${info.username||'-'}
+Email: ${info.email||'-'}
+Phone: ${info.phone||'-'}
+Gender: ${info.gender||'-'}
+DOB: ${info.dob||'-'}
+Balance: ${info.MainBalance??0} TK
+Banned: ${info.banned?'Yes':'No'}
+    `);
+  });
+}
+</script>
+
+</body>
+</html>

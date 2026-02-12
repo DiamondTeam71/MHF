@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel - grouped view</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+    * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Hind Siliguri', 'Poppins', sans-serif;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+body {
+  background: url("assets/images/ponno.jpg") no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 65px;
+}
+
+.wrap {
+  max-width: 1200px;
+  margin: 20px 30px;
+  background: rgba(255,255,255,0.95);
+  padding: 20px;
+  border-radius: 37px;
+  border: 0px solid black;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  overflow-x: auto;
+}
+
+header {
+  background: red;
+  padding: 20px;
+  font-size: 26px;
+  color: white;
+  border-top: 0px solid black;
+  border-bottom: 2px solid black;
+  display: flex;
+  align-items: center;   
+  justify-content: center; 
+  gap: 10px;  
+}
+
+.header-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  border: 0px solid black;
+  object-fit: cover; 
+}
+
+ .span-all {
+  color: gold; 
+  font-weight: bold; 
+}
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+th, td {
+  border: 2px solid black;
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+th {
+  background: #1d4ed8;
+  color: #fff;
+  font-weight: 600;
+}
+
+tr:hover {
+  background: rgba(37, 99, 235, 0.06);
+  transition: 0.2s ease-in-out;
+}
+
+.btn {
+  padding: 6px 10px;
+  border: 2px solid black;
+  border-radius: 27px;
+  cursor: pointer;
+  margin: 6px;
+  font-weight: 500;
+}
+
+.btn.view { background: #ec4899; color: #fff; }
+.btn.delete { background: #ef4444; color: #fff; }
+.btn.export { background: #2563eb; color: #fff; }
+
+#popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 50px;
+  z-index: 9999;
+}
+
+#popupContent {
+  background: #fff;
+  padding: 18px;
+  border-radius: 37px;
+  border: 0px solid black;
+  max-width: 900px;
+  width: 95%;
+  max-height: 80vh;
+  overflow: auto;
+  position: relative;
+}
+
+#popupContent h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#closePopup {
+  position: absolute;
+  top: -15px;
+  right: 12px;
+  cursor: pointer;
+  color: #333;
+  font-weight: bold;
+  font-size: 32px;
+}
+
+.small { font-size: 13px; color: #333; }
+
+.countBadge {
+  background: #10b981;
+  color: #fff;
+  padding: 4px 8px;
+  border: 4px solid black;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+@media (min-width: 600px) {
+  body {
+    padding-bottom: 70px;
+  }
+  .wrap {
+    margin: 25px 30px;
+    padding: 30px;
+    border-radius: 45px;
+    max-width: 1400px;
+  }
+  header {
+    font-size: 30px;
+    padding: 30px;
+  }
+  .header-logo {
+    width: 75px;
+    height: 75px;
+  }
+  table {
+    min-width: 900px;
+    font-size: 1.1rem;
+  }
+  th, td {
+    padding: 14px 12px;
+  }
+  .btn {
+    padding: 14px 14px;
+    border-radius: 32px;
+    font-size: 1.1rem;
+  }
+  #popupContent {
+    max-width: 1100px;
+    padding: 25px;
+    border-radius: 45px;
+  }
+}
+
+</style>
+</head>
+<body>
+ <header>
+ <img src="assets/images/logo.png" alt="Logo" class="header-logo">
+ MHF<span style="margin-left: 0;" class="span-all"> Admin</span> <button id="logoutBtn" style="
+    margin-left:auto;
+    padding:8px 15px;
+    border:none;
+    border-radius:37px;
+    background:black;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+  ">Logout</button>
+</header>
+<div class="stats-container">
+    <div class="stat-box">
+        <p>Total User: <span id="totalUsers">0</span></p>
+    </div>
+    <div class="stat-box">
+        <p>Total Gmail: <span id="totalEntry">0</span></p>
+    </div>
+</div>
+<style>
+    .stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin: 20px 20px;
+    padding: 20px;
+    
+    
+    border-radius: 37px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.stat-box {
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 15px;
+    border-left: 4px solid black; 
+    min-width: 150px;
+    flex: 1 1 150px;
+    margin: 0px 30px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-box p {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+.stat-box span {
+    color: #b45309; /* গাঢ় গোল্ড রঙ */
+}
+
+.stat-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    cursor: default;
+}
+</style>
+<input type="text" id="searchInput" placeholder="🔍 Username লিখে সার্চ করুন..." style="
+  padding: 10px 15px;
+  width: 280px;
+  border: 2px solid #000;
+  border-radius: 37px;
+  margin: 15px auto;
+  display: block;
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  color: #000;
+  outline: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  transition: 0.3s ease;
+">
+<div class="wrap">
+ <button class="btn export" style="background:purple;color:white;" onclick="exportAllGroups()">Export All (New Only)</button>
+ 
+  <table>
+   <thead>
+  <tr>
+  <th>User ID</th>
+  <th>User Name</th>
+  <th>Sector</th>
+  <th>Entries Count</th>
+  <th>Base Payment</th>
+  <th>Approved Gmail</th>
+<th>Remaining Approved</th>
+<th>Expected Payment</th> <!-- নতুন -->
+  <th>Added Payment</th> <!-- নতুন -->
+  <th>দেখুন</th>
+  <th>কাটুন (সব)</th>
+  <th>Export XLSX (সব)</th>
+  <th>Add Balance</th>
+  <th>Send Message</th>
+</tr>
+</thead>
+    <tbody id="adminTable"></tbody>
+  </table>
+</div>
+
+<div id="popup">
+  <div id="popupContent">
+    <span id="closePopup">&times;</span>    
+    <div style="text-align:center;margin-bottom:8px;">
+      <span id="popupUser" class="small"></span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr><th>No.</th><th>Gmail</th><th>Password</th><th>Timestamp</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="popupBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="authOverlay" style="
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.8);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:99999;
+  flex-direction:column;
+  color:#fff;
+  font-family:'Hind Siliguri', sans-serif;
+">
+  <h2>Admin Login Required</h2>
+  <input id="secretCode" type="text" placeholder="Secret Code" style="padding:10px;margin:5px;border-radius:10px;border:none;font-size:16px;">
+  <input id="purkaId" type="text" placeholder="Purka ID" style="padding:10px;margin:5px;border-radius:10px;border:none;font-size:16px;">
+  <button id="authLoginBtn" style="padding:10px 20px;margin-top:10px;border-radius:12px;border:none;background:#10b981;color:#fff;font-weight:bold;cursor:pointer;">Login</button>
+  <p id="authError" style="color:red;margin-top:10px;font-weight:bold;"></p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB77ruQ-FxUvMAYHsUOipYB4lAQKaavCN0",
+  authDomain: "ludooclubofficial.firebaseapp.com",
+  databaseURL: "https://ludooclubofficial-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ludooclubofficial",
+  storageBucket: "ludooclubofficial.firebasestorage.app",
+  messagingSenderId: "141984102700",
+  appId: "1:141984102700:web:37f719e81ae32df69ed489",
+  measurementId: "G-PHTVR2KP9E"
+};
+firebase.initializeApp(firebaseConfig)
+
+const adminTable=document.getElementById("adminTable")
+const popup=document.getElementById("popup")
+const popupBody=document.getElementById("popupBody")
+const closePopup=document.getElementById("closePopup")
+const searchInput=document.getElementById("searchInput")
+const overlay=document.getElementById("authOverlay")
+const loginBtn=document.getElementById("authLoginBtn")
+const logoutBtn=document.getElementById("logoutBtn")
+const secretInput=document.getElementById("secretCode")
+const purkaInput=document.getElementById("purkaId")
+const authError=document.getElementById("authError")
+const totalUsersEl=document.getElementById("totalUsers")
+
+
+
+const totalEntryEl = document.getElementById("totalEntry");
+const AUTH_SECRET="MHF_SYSTEM@$@$"
+const AUTH_PURKA="MHF_SYSTEM@$@$"
+
+let searchTimer=null
+function checkAuth(){
+const ok=localStorage.getItem("isAdminLoggedIn")==="true"
+overlay.style.display=ok?"none":"flex"
+logoutBtn.style.display=ok?"inline-block":"none"
+}
+loginBtn.onclick=()=>{
+if(secretInput.value.trim()===AUTH_SECRET&&purkaInput.value.trim()===AUTH_PURKA){
+localStorage.setItem("isAdminLoggedIn","true")
+checkAuth()
+}else authError.textContent="Secret Code বা Purka ID ভুল!"
+}
+logoutBtn.onclick=()=>{
+localStorage.removeItem("isAdminLoggedIn")
+checkAuth()
+}
+document.addEventListener("DOMContentLoaded",checkAuth)
+closePopup.onclick=()=>popup.style.display="none"
+popup.onclick=e=>{if(e.target===popup)popup.style.display="none"}
+function fmtTS(ts){return ts?new Date(ts).toLocaleString():""}
+
+function sendFinalMessage(group,userLevel,payment,totalApproved){
+const msg=`হেই বন্ধু, তোমার প্রাইম লেভেল হচ্ছে ${userLevel} লেভেল! তোমার পাঠানো সেক্টর ${group.sector} থেকে মোট ${totalApproved} টি জিমেইল এপ্রুভ হয়েছে! টাকার পরিমাণ হচ্ছে ${totalApproved*payment} — তোমার প্রোফাইল চেক করলে পেয়ে যাবে!`
+firebase.database().ref("user_messages/"+group.userId).push({text:msg,timestamp:Date.now(),from:"Admin"})
+}
+let POPUP_OPEN = false;
+    
+function showPopup(group){
+  POPUP_OPEN = true;
+  popupBody.innerHTML = "";
+
+  group.entries
+    .filter(ent => !ent.hidden)  // ✅ hidden এন্ট্রি বাদ দিচ্ছে
+    .sort((a,b)=>(a.timestamp||0)-(b.timestamp||0))
+    .forEach((ent,i)=>{
+
+      const tr = document.createElement("tr");
+      tr.dataset.key = ent.key;            // ✅ VERY IMPORTANT
+      tr.style.background = ent.color || "";
+
+      tr.innerHTML = `
+        <td>${i+1}</td>
+        <td>${ent.row[0] || ""}</td>
+        <td>${ent.row[1] || ""}</td>
+        <td>${fmtTS(ent.timestamp)}</td>
+        <td>
+          <button class="approve">Approve</button>
+          <button class="reject">Reject</button>
+        </td>
+      `;
+
+      const approveBtn = tr.querySelector(".approve");
+      const rejectBtn  = tr.querySelector(".reject");
+
+      approveBtn.onclick = async () => {
+  if(ent.color === "green") return; // Already approved
+
+  ent.color = "green";
+  tr.style.background = "green";
+
+  const updates = {};
+  updates[`/admin_messages/${ent.key}/color`] = "green";
+
+  // Referral payment logic
+  const userSnap = await firebase.database().ref("users/" + ent.userId).once("value");
+  const userData = userSnap.val();
+  const refId = userData?.referredBy;
+
+  if(refId && !ent.paid) { // যদি referrer থাকে এবং আগে paid না হয়ে থাকে
+    const refSnap = await firebase.database().ref("users/" + refId).once("value");
+    const refData = refSnap.val() || {};
+    const currentMain = refData.MainBalance || 0;
+    const currentTwitter = refData.TwitterBalance || 0;
+
+    const amount = 0.3; // ০.৩ টাকা
+
+    updates[`/users/${refId}/MainBalance`] = currentMain + amount;
+    updates[`/users/${refId}/TwitterBalance`] = currentTwitter + amount;
+    updates[`/admin_messages/${ent.key}/paid`] = true;
+  }
+
+  await firebase.database().ref().update(updates);
+};
+
+      rejectBtn.onclick = () => {
+        if(ent.color === "red") return;
+
+        ent.color = "red";
+        tr.style.background = "red";
+
+        firebase.database()
+          .ref("admin_messages/" + ent.key + "/color")
+          .set("red");
+      };
+
+      popupBody.appendChild(tr);
+    });
+
+  popup.style.display = "flex";
+}
+async function initialLoad(){
+  const snap = await firebase.database()
+    .ref("admin_messages")
+    .once("value");
+
+  window.latestData = snap.val() || {};
+
+  const u = await firebase.database()
+    .ref("users")
+    .once("value");
+
+  window.latestUsers = u.val() || {};
+
+  updateTotalGmail(window.latestData); 
+  renderAdminTable(window.latestData, window.latestUsers);
+}
+initialLoad();
+firebase.database()
+  .ref("admin_messages")
+  .on("child_changed", snap => {
+
+    const key = snap.key;
+    const val = snap.val();
+
+    window.latestData[key] = val;
+
+    updateTotalGmail(window.latestData); // ✅ add this
+
+    if(POPUP_OPEN){
+      updatePopupRow(key, val);
+    }
+});
+function updateTotalGmail(data){
+    if(!data){
+        totalEntryEl.textContent = 0;
+        return;
+    }
+
+    let count = 0;
+    Object.values(data).forEach(v => {
+        if(!v.hidden) count++;  
+    });
+
+    totalEntryEl.textContent = count;
+}
+function updatePopupRow(key, data){
+  const row = popupBody.querySelector(`[data-key="${key}"]`);
+  if(!row) return;
+
+  row.style.background = data.color || "";
+}
+
+let CURRENT_PAGE = 1;    
+const GROUPS_PER_PAGE = 50;    
+    
+async function renderAdminTable(data, users, query = "") {    
+    adminTable.innerHTML = "";    
+    if (!data || !Object.keys(data).length) {    
+        adminTable.innerHTML = "<tr><td colspan='14'>কোনো এন্ট্রি নেই</td></tr>";    
+        renderPagination(0);    
+        return;    
+    }    
+    
+   
+    const groups = new Map();    
+    const approvedByUser = {};    
+    Object.values(data).forEach(v => {    
+        if (v.hidden) return;    
+        if (v.color === "green") approvedByUser[v.userId] = (approvedByUser[v.userId] || 0) + 1;    
+    });    
+    
+
+Object.entries(data).forEach(([k, v]) => {
+    if (v.hidden) return;
+    const uid = v.userId || "unknown";
+    const sec = v.sector || "unknown";
+    const gk = uid + "||" + sec;
+    if (!groups.has(gk)) {
+    groups.set(gk, { 
+        userId: uid, 
+        sector: sec, 
+        entries: [], 
+        basePrice: v.basePrice || 18  // এখানে Firebase value ব্যবহার হবে
+    });
+
+    }
+    groups.get(gk).entries.push({ key: k, ...v });
+});
+    
+    let list = [...groups.values()];    
+    
+    if (query) {    
+        list = list.filter(g => (users[g.userId]?.username || "").toLowerCase().includes(query));    
+        CURRENT_PAGE = 1;    
+    }    
+    
+    if (!list.length) {    
+        adminTable.innerHTML = "<tr><td colspan='14'>কোনো মেলানো ইউজার পাওয়া যায়নি</td></tr>";    
+        renderPagination(0);    
+        return;    
+    }    
+    
+    list.sort((a, b) => Math.max(...b.entries.map(e => e.timestamp)) - Math.max(...a.entries.map(e => e.timestamp)));    
+    
+    const totalPages = Math.ceil(list.length / GROUPS_PER_PAGE);    
+    if (CURRENT_PAGE > totalPages) CURRENT_PAGE = totalPages;    
+    
+    const start = (CURRENT_PAGE - 1) * GROUPS_PER_PAGE;    
+    const pagedList = list.slice(start, start + GROUPS_PER_PAGE);    
+    
+    const frag = document.createDocumentFragment();    
+    pagedList.forEach(g => {    
+        const tr = document.createElement("tr");    
+    
+        const hasColored = g.entries.some(e => e.color === "green" || e.color === "red");    
+        const allExported = g.entries.length > 0 && g.entries.every(e => e.exported === true);    
+        if (hasColored) tr.style.background = "rgba(0,255,0,0.25)";    
+        else if (allExported) tr.style.background = "rgba(255,0,0,0.25)";    
+        else tr.style.background = "";    
+    
+        const uname = users[g.userId]?.username || "Unknown";    
+        const approved = Object.values(data).filter(d => d.userId === g.userId && d.color === "green").length;    
+          
+    
+        const totalApproved = g.entries.filter(e => e.color === "green").length;    
+        const remainingApproved = g.entries.filter(e => e.color === "green" && !e.paid).length;    
+        const expected = remainingApproved * g.basePrice;    
+const added = (totalApproved - remainingApproved) * g.basePrice;
+    
+       
+// সাধারণ td গুলো innerHTML দিয়ে
+tr.innerHTML = `
+    <td>${g.userId}</td>
+    <td>${uname}</td>
+    <td>${g.sector}</td>
+    <td>${g.entries.length}</td>
+    <td>${totalApproved}</td>
+    <td>${remainingApproved}</td>
+    <td>${expected}</td>
+    <td>${added}</td>
+    <td><button class="view">দেখুন</button></td>
+    <td><button class="delete">কাটুন</button></td>
+    <td><button class="export">Export</button></td>
+    <td>
+        <button class="addBalance">Add Balance</button>
+        <button class="allApprove">All Approve</button>
+        <button class="allReject">All Reject</button>
+    </td>
+    <td>
+        <input type="text" placeholder="Type message">
+        <button class="msg">Send</button>
+    </td>
+`;
+
+// base price td
+const baseTd = document.createElement("td");
+baseTd.textContent = g.basePrice; // গ্রুপ অনুযায়ী
+baseTd.style.cursor = "pointer";
+baseTd.title = "Click to edit";
+
+baseTd.onclick = () => {
+    const oldPrice = g.basePrice;
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = "0";
+    input.step = "0.01";
+    input.value = oldPrice;
+    input.style.width = "70px";
+    input.style.textAlign = "center";
+    input.style.fontWeight = "bold";
+
+    baseTd.textContent = "";
+    baseTd.appendChild(input);
+    input.focus();
+
+    const savePrice = async () => {
+        const priceNum = parseFloat(input.value);
+        if(isNaN(priceNum) || priceNum <= 0){
+            alert("ভুল ইনপুট!");
+            baseTd.textContent = oldPrice;
+            return;
+        }
+
+        g.basePrice = priceNum;
+        baseTd.textContent = priceNum;
+
+        try {
+            // ১) Groups path এ update
+            await firebase.database().ref("/groups/" + g.userId + "_" + g.sector + "/basePrice").set(priceNum);
+
+            // ২) Related admin_messages এ update
+            const updates = {};
+            g.entries.forEach(e => {
+                updates[`/admin_messages/${e.key}/basePrice`] = priceNum;
+            });
+            await firebase.database().ref().update(updates);
+
+            showToast(`✅ Base Payment আপডেট হয়েছে ${priceNum}`, "success");
+
+            // ৩) Table re-render
+            renderAdminTable(window.latestData, window.latestUsers, searchInput.value.trim().toLowerCase());
+        } catch(err){
+            console.error(err);
+            alert("Firebase update failed");
+            baseTd.textContent = oldPrice;
+        }
+    };
+
+    input.onblur = savePrice;
+    input.onkeydown = e => { if(e.key === "Enter") savePrice(); };
+};
+
+// append special td
+tr.insertBefore(baseTd, tr.children[4]); // ঠিক জায়গায় insert
+    
+        tr.querySelector(".view").onclick = () => showPopup(g);    
+        tr.querySelector(".delete").onclick = () => deleteGroup(g);    
+        tr.querySelector(".export").onclick = () => exportGroupXLSX(g);    
+    
+        tr.querySelector(".addBalance").onclick = async () => {    
+            const addBtn = tr.querySelector(".addBalance");    
+            addBtn.disabled = true;    
+            try {    
+                const unpaidApproved = g.entries.filter(e => e.color === "green" && !e.paid);    
+                if (!unpaidApproved.length) return alert("No unpaid approved payment");    
+                const amount = unpaidApproved.length * g.basePrice; 
+                const snap = await firebase.database().ref("users/" + g.userId).once("value");    
+                const mainBal = snap.child("MainBalance").val() || 0;    
+                const twitterBal = snap.child("TwitterBalance").val() || 0;    
+                const updates = {};    
+                unpaidApproved.forEach(e => updates["/admin_messages/" + e.key + "/paid"] = true);    
+                updates["/users/" + g.userId + "/MainBalance"] = mainBal + amount;    
+                updates["/users/" + g.userId + "/TwitterBalance"] = twitterBal + amount;    
+                await firebase.database().ref().update(updates);    
+                alert(`✅ ${amount} টাকা Add করা হয়েছে`);    
+            } catch (err) {    
+                console.error(err);    
+                alert("Something went wrong");    
+            } finally { addBtn.disabled = false; }    
+        };    
+    
+tr.querySelector(".allApprove").onclick = async () => {
+  const pending = g.entries.filter(e => !e.color);    
+  if (!pending.length) return alert("সবই ইতিমধ্যেই Approve/Reject হয়েছে!");    
+
+  const updates = {};
+  const refBalances = {}; // referrer কে একবারে update করার জন্য
+
+  for(const e of pending){
+    updates[`/admin_messages/${e.key}/color`] = "green";
+
+    const userData = window.latestUsers[e.userId] || {};
+    const refId = userData.referredBy;
+
+    // Referrer payment
+    if(refId){
+      if(!refBalances[refId]){
+        const refData = window.latestUsers[refId] || {};
+        refBalances[refId] = {
+          MainBalance: refData.MainBalance || 0,
+          TwitterBalance: refData.TwitterBalance || 0
+        };
+      }
+
+      refBalances[refId].MainBalance += 0.3;
+      refBalances[refId].TwitterBalance += 0.3;
+    }
+
+    // User এর own payment এর জন্য paid=false রাখছি, যাতে remainingApproved ঠিক দেখায়
+    updates[`/admin_messages/${e.key}/paid`] = false;
+  }
+
+  // সব referrer এর হিসাব আপডেট করি একবারে
+  for(const refId in refBalances){
+    updates[`/users/${refId}/MainBalance`] = refBalances[refId].MainBalance;
+    updates[`/users/${refId}/TwitterBalance`] = refBalances[refId].TwitterBalance;
+  }
+
+  await firebase.database().ref().update(updates);
+
+  // Local data update
+  pending.forEach(e => e.color = "green");    
+
+  // রি-রেন্ডার, expected payment ঠিক দেখাবে
+  renderAdminTable(window.latestData, window.latestUsers, searchInput.value.trim().toLowerCase());    
+  
+  // Success toast
+  showToast("সব Pending এন্ট্রি Approve হয়েছে!", "success");
+};
+
+// Toast function
+function showToast(msg, type="info"){
+  const container = document.getElementById("toastContainer");
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(()=>t.remove(), 4000);
+}
+    
+tr.querySelector(".allReject").onclick = async () => {    
+       
+    const pending = g.entries.filter(e => !e.color);    
+    if (!pending.length) return alert("সবই ইতিমধ্যেই Approve/Reject হয়েছে!");    
+    
+    const updates = {};    
+    pending.forEach(e => updates[`/admin_messages/${e.key}/color`] = "red");    
+    
+    await firebase.database().ref().update(updates);    
+    
+        
+    pending.forEach(e => e.color = "red");    
+    
+    renderAdminTable(window.latestData, window.latestUsers, searchInput.value.trim().toLowerCase());    
+};            
+    
+        tr.querySelector(".msg").onclick = async () => {    
+            const txt = tr.querySelector("input[type=text]").value.trim();    
+            if (!txt) return alert("Write message");    
+            await firebase.database().ref("user_messages/" + g.userId).push({ text: txt, timestamp: Date.now(), from: "Admin" });    
+            alert("Message Sent");    
+        };    
+    
+        frag.appendChild(tr);    
+    });    
+    
+    adminTable.appendChild(frag);    
+    renderPagination(totalPages);    
+}    
+    
+function renderPagination(totalPages) {    
+    let paginationEl = document.getElementById("pagination");    
+    if (!paginationEl) {    
+        paginationEl = document.createElement("div");    
+        paginationEl.id = "pagination";    
+        paginationEl.style.display = "flex";    
+        paginationEl.style.justifyContent = "center";    
+        paginationEl.style.alignItems = "center";    
+        paginationEl.style.flexWrap = "wrap";    
+        paginationEl.style.gap = "8px";    
+        paginationEl.style.margin = "20px 0";    
+        document.querySelector(".wrap").appendChild(paginationEl);    
+    }    
+    paginationEl.innerHTML = "";    
+    
+    for (let i = 1; i <= totalPages; i++) {    
+        const btn = document.createElement("button");    
+        btn.textContent = i;    
+        btn.style.minWidth = "40px";    
+        btn.style.height = "40px";    
+        btn.style.borderRadius = "50%";    
+        btn.style.border = "none";    
+        btn.style.fontWeight = "600";    
+        btn.style.fontSize = "14px";    
+        btn.style.cursor = "pointer";    
+        btn.style.transition = "all 0.2s ease";    
+    
+        if (i === CURRENT_PAGE) {    
+            btn.style.background = "#2563eb";    
+            btn.style.color = "#fff";    
+            btn.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";    
+        } else {    
+            btn.style.background = "#f0f0f0";    
+            btn.style.color = "#333";    
+        }    
+    
+        btn.onmouseover = () => { if (i !== CURRENT_PAGE) btn.style.background = "#d1d5db"; };    
+        btn.onmouseout = () => { if (i !== CURRENT_PAGE) btn.style.background = "#f0f0f0"; };    
+    
+        btn.onclick = () => {    
+            CURRENT_PAGE = i;    
+            renderAdminTable(window.latestData, window.latestUsers, searchInput.value.trim().toLowerCase());    
+            window.scrollTo({ top: 0, behavior: "smooth" });    
+        };    
+    
+        paginationEl.appendChild(btn);    
+    }    
+}  
+  
+searchInput.addEventListener("input", () => {
+    clearTimeout(window.searchTimer);
+    window.searchTimer = setTimeout(() => {
+        CURRENT_PAGE = 1;
+        renderAdminTable(window.latestData, window.latestUsers, searchInput.value.trim().toLowerCase());
+    }, 200);
+});
+
+function deleteGroup(group){
+if(!confirm("Hide entries?"))return
+const u={}
+group.entries.forEach(e=>u["/admin_messages/"+e.key+"/hidden"]=true)
+firebase.database().ref().update(u).then(()=>alert("Hidden"))
+}
+
+
+function exportGroupXLSX(group){
+const uname=window.latestUsers[group.userId]?.username||"Unknown"
+const rows=[["Gmail","Password","Username","Sector","Date"]]
+const updates={}
+group.entries.forEach(e=>{
+if(!e.exported){
+rows.push([e.row[0]||"",e.row[1]||"",uname,group.sector,fmtTS(e.timestamp)])
+updates["/admin_messages/"+e.key+"/exported"]=true
+}
+})
+if(rows.length===1)return alert("Nothing new to export")
+const ws=XLSX.utils.aoa_to_sheet(rows)
+const wb=XLSX.utils.book_new()
+XLSX.utils.book_append_sheet(wb,ws,"sheet1")
+XLSX.writeFile(wb,group.userId+"_"+group.sector+".xlsx")
+firebase.database().ref().update(updates)
+alert("Exported")
+}
+async function exportAllGroups(){
+if(!window.latestData)return alert("No data")
+const data=window.latestData
+const groups=new Map()
+const allUids=new Set(Object.values(data).map(d=>d.userId).filter(Boolean))
+const usernameCache={}
+await Promise.all([...allUids].map(async uid=>{
+try{usernameCache[uid]=(await firebase.database().ref('users/'+uid+'/username').once("value")).val()||"-"}catch{usernameCache[uid]="-"}
+}))
+Object.entries(data).forEach(([key,val])=>{
+if(val.hidden) return
+const uid=val.userId||"unknown"
+const uname=usernameCache[uid]||"-"
+const sec=val.sector||"Unknown"
+const groupKey=uid+"||"+sec
+if(!groups.has(groupKey))groups.set(groupKey,{userId:uid,username:uname,sector:sec,entries:[]})
+groups.get(groupKey).entries.push({...val,key})
+})
+const unexportedGroups=Array.from(groups.values()).map(g=>({...g,entries:g.entries.filter(e=>!e.exported)})).filter(g=>g.entries.length>0)
+if(unexportedGroups.length===0)return alert("সব ডাটা আগেই এক্সপোর্ট করা হয়েছে!")
+const sheetData=[]
+const header=["Gmail","Password","Username","Sector","Date"]
+sheetData.push(header)
+unexportedGroups.forEach(g=>g.entries.forEach(ent=>{
+sheetData.push([ent.row[0]||"",ent.row[1]||"",g.username,g.sector,fmtTS(ent.timestamp)])
+}))
+const ws=XLSX.utils.aoa_to_sheet(sheetData)
+const wb=XLSX.utils.book_new()
+XLSX.utils.book_append_sheet(wb,ws,"AllExports")
+XLSX.writeFile(wb,"All_Sectors_Export.xlsx")
+const updates={}
+const messages=[]
+unexportedGroups.forEach(g=>{
+g.entries.forEach(ent=>updates["/admin_messages/"+ent.key+"/exported"]=true)
+const approvedCount=Object.values(data).filter(d=>d.userId===g.userId&&d.color==="green").length
+
+messages.push(firebase.database().ref("user_messages/"+g.userId).push({text:`আমরা আপনার পাঠানো ${g.sector} এর সকল মেইল রিসিভ করেছি, ২৪-৪৮ ঘন্টার মধ্যে আপনি আমাদের থেকে লাইভ রিপোর্ট পেয়ে যাবেন! যদি কোনো মেইলের পাসওয়ার্ড পরিবর্তন করেন, তাহলে সঙ্গে সঙ্গে আপনাকে ব্যান করা হবে!`,timestamp:Date.now(),from:"Admin"}))
+})
+await firebase.database().ref().update(updates)
+await Promise.all(messages)
+alert(`✅ Export All সফল! মোট ${unexportedGroups.length} গ্রুপ এক্সপোর্ট হয়েছে এবং ইউজারদের অটো মেসেজ পাঠানো হয়েছে!`)
+}
+firebase.database().ref("users").on("value",s=>{
+totalUsersEl.textContent=s.exists()?Object.keys(s.val()).length:0
+})
+   </script>
+
+<div id="toastContainer"></div>
+<style>
+    #toastContainer{
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast{
+  min-width: 220px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 8px 25px rgba(0,0,0,.25);
+  animation: slideIn .4s ease, fadeOut .4s ease 3.6s forwards;
+}
+
+.toast.success{ background:#10b981; }
+.toast.error{ background:#ef4444; }
+.toast.info{ background:#3b82f6; }
+
+@keyframes slideIn{
+  from{ transform: translateX(120%); opacity:0 }
+  to{ transform: translateX(0); opacity:1 }
+}
+@keyframes fadeOut{
+  to{ opacity:0; transform: translateX(120%) }
+}
+</style></body>
+</html>

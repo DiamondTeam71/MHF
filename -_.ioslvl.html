@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel - Level & Payment</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Hind Siliguri', sans-serif; padding:20px; }
+  table { width:100%; border-collapse: collapse; margin-top:15px; }
+  th, td { border:1px solid #000; padding:8px; text-align:center; }
+  th { background:#ddd; }
+  input { width:80px; text-align:center; }
+  button { padding:5px 10px; cursor:pointer; border:none; border-radius:5px; }
+  .saveBtn { background:green; color:white; }
+</style>
+</head>
+<body>
+
+<h2>Level & Payment System</h2>
+<table id="levelConfigTable">
+<thead>
+<tr>
+<th>Level</th>
+<th>Min Approved</th>
+<th>Payment/TK</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB77ruQ-FxUvMAYHsUOipYB4lAQKaavCN0",
+  authDomain: "ludooclubofficial.firebaseapp.com",
+  databaseURL: "https://ludooclubofficial-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ludooclubofficial",
+  storageBucket: "ludooclubofficial.firebasestorage.app",
+  messagingSenderId: "141984102700",
+  appId: "1:141984102700:web:37f719e81ae32df69ed489",
+  measurementId: "G-PHTVR2KP9E"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const tbody = document.querySelector('#levelConfigTable tbody');
+
+async function loadLevels() {
+  const snap = await firebase.database().ref('level_config').once('value');
+  const data = snap.val() || {};
+  tbody.innerHTML = '';
+  for(let lvl=1; lvl<=10; lvl++){
+    const config = data[lvl] || { minApproved:0, payment:0 };
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${lvl}</td>
+      <td><input type="number" value="${config.minApproved}" id="minApproved${lvl}"></td>
+      <td><input type="number" value="${config.payment}" id="payment${lvl}"></td>
+      <td><button class="saveBtn" onclick="saveLevel(${lvl})">Save</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+async function saveLevel(level){
+  const minApproved = parseInt(document.getElementById('minApproved'+level).value);
+  const payment = parseFloat(document.getElementById('payment'+level).value);
+  if(isNaN(minApproved) || isNaN(payment)) return alert('সঠিক মান দিন!');
+  await firebase.database().ref('level_config/'+level).set({ minApproved, payment });
+  alert(`Level ${level} আপডেট হয়েছে!`);
+}
+
+loadLevels();
+</script>
+
+</body>
+</html>
