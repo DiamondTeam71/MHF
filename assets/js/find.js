@@ -120,16 +120,33 @@ const games = [
     name: "জিমেইল!", 
     file: "Gmail1stDial71.html", 
     icon: "fa-envelope", 
+    style: "fas",   // Solid
     image: "assets/images/Gmail.png",
-    keyword: "gmail"  // সার্চ কীওয়ার্ড
+    keyword: "gmail"
+  },
+  {
+      name: "কয়েন!",
+      file: "Niva1st.html",
+      icon: "fa-coins",
+      style: "fas",  // Solid
+      image: "https://i.ibb.co/pjrdjftC/blob.jpg",
+      keyword: "niva, ns, top, flow, coin, riva, top flow"
+  },
+  {
+      name: "ইনস্টাগ্রাম!",
+      file: "Insta1st.html",
+      icon: "fa-instagram",
+      style: "fab",  // Brand
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6sEZ6sPHMJwV8mAVPbKbKDB-JMMnHM7L8zJ-eOKJP5w&s=10",
+      keyword: "instagram"
   }
 ];
 
 const container = document.querySelector('.game-types');
 container.innerHTML = games.map(game => `
-  <a href="#" class="game-card" id="${game.keyword}" data-game="${game.file}">
+  <a href="#" class="game-card" data-game="${game.file}">
     <div class="card-image" style="background-image:url('${game.image}')"></div>
-    <div class="card-text"><i class="fas ${game.icon}" style="margin-right:8px;"></i>${game.name}</div>
+    <div class="card-text"><i class="${game.style} ${game.icon}" style="margin-right:8px;"></i>${game.name}</div>
   </a>
 `).join('');
 
